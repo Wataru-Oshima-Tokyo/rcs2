@@ -1,0 +1,111 @@
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>Ayame Web SDK Sample</title>
+        <link rel="stylesheet" href="https://cdn.rawgit.com/Chalarangelo/mini.css/v3.0.1/dist/mini-default.min.css">
+    </head>
+    <body>
+        <h4>Ayame Web SDK Sample</h4>
+        <ul>
+        <!-- 
+            <li><a href="./sendrecv.html">双方向送受信(sendrecv)</a></li>
+            <li><a href="./sendonly.html">送信のみ(sendonly)</a></li>
+            <li><a href="./recvonly.html">受信のみ(recvonly)</a></li>
+            <li><a href="./displaymedia.html">getDisplayMedia()(画面共有)</a></li>
+            <li><a href="./datachannel.html">RTCDataChannel</a></li>
+            <li><a href="./data_video.html">data video recv</a></li>
+	    <p> --- test1 --- </p>
+            <input type="button" value="all" onclick=" myopen1()">
+            <li><a href="./data_video_taisei.html?roomId=hoshianaaa@test1-11">data_video</a></li>
+            <li><a href="./video.html?roomId=hoshianaaa@test1-12">video2</a></li>
+            <li><a href="./video.html?roomId=hoshianaaa@test1-13">video3</a></li>
+            <li><a href="./audio.html?roomId=hoshianaaa@test1-21">audio</a></li>
+        -->
+        <label for="robot">select robot ID</label>
+        <select id="robot">
+        <option value="Pochi">Pochi(Go1)</option>
+        <option value="TK-GO1-002">TK-GO1-002</option>
+        <option value="Lassie">Lassie(Aliengo)</option>
+        <option value="TK-003">TK-Aliengo-003</option>
+        <option value="Hachi">Hachi(A1)</option>
+        <option value="test1">test</option>
+        </select>
+
+        <div>
+          <input type="button" value="DataOpen" id="checkDataButton">
+          <input type="button" value="AllOpen" id="checkButton">
+        </div>
+        
+	    <p> --- spiderware inspection server --- </p>
+            <li><a href="https://techshare.interplay.jp/template/">spiderware</a></li>
+
+	    <p> --- Pochi(Go1) --- </p>
+            <li><a href="./data_taisei.html?roomId=hoshianaaa@Pochi-11">data channel</a></li>
+            
+	    <p> --- TK-GO1-002 --- </p>
+            <li><a href="./data_taisei.html?roomId=hoshianaaa@TK-GO1-002-11">data channel</a></li>
+
+	    <p> --- Lassie(Aliengo) --- </p>
+            <li><a href="./data_taisei.html?roomId=hoshianaaa@Lassie-11">data channel</a></li>
+
+	    <p> --- TK-ALIENGO-003 --- </p>
+            <li><a href="./data_taisei.html?roomId=hoshianaaa@TK-GO1-002-11">data channel</a></li>
+
+	    <p> --- Hachi(A1) --- </p>
+            <li><a href="./data_taisei.html?roomId=hoshianaaa@Hachi-11">data channel</a></li>
+            <li><a href="./data_video_taisei.html?roomId=hoshianaaa@Hachi-11">main monitor</a></li>
+            <li><a href="./video.html?roomId=hoshianaaa@Hachi-12">map</a></li>
+            <li><a href="./video.html?roomId=hoshianaaa@Hachi-13">ipcam</a></li>
+            <li><a href="./video.html?roomId=hoshianaaa@Hachi-14">bird view</a></li>
+            <li><a href="./audio.html?roomId=hoshianaaa@Hachi-21">audio</a></li>
+
+        </ul>
+    <script>
+      
+      let roomId = 'hoshianaaa';
+      let checkButton = document.getElementById('checkButton');
+      checkButton.addEventListener('click', allpop);
+      checkButton.addEventListener('change', allpop);
+      
+      let checkDataButton = document.getElementById('checkDataButton');
+      checkDataButton.addEventListener('click', datapop);
+      checkDataButton.addEventListener('change', datapop);
+      
+
+      function allpop()
+      {
+        let robotSelect = document.getElementById('robot');
+        let robotId = robotSelect.value;
+        let dataurl="./data_video_taisei.html?roomId="+roomId+"@"+robotId;
+        let videourl="./video.html?roomId="+roomId+"@"+robotId;
+        let audiourl="./audio.html?roomId="+roomId+"@"+robotId;
+
+        window.open(dataurl+'-11',"data+video1","width=450,height=200,top=0,left=0");
+        window.open(videourl+'-12',"video2","width=450,height=200,top=300,left=0");
+        window.open(videourl+'-13',"video3","width=450,height=200,top=0,left=500");
+        window.open(videourl+"-14","video4","width=450,height=200,top=300,left=500");
+        window.open(audiourl+"-21","audio","width=900,height=200,top=600,left=0");
+      }
+
+      function datapop()
+      {
+        let robotSelect = document.getElementById('robot');
+        let robotId = robotSelect.value;
+        let dataurl="./data_taisei.html?roomId="+roomId+"@"+robotId;
+        let videourl="https://techshare.interplay.jp/template/";
+        window.open(dataurl+'-11',"datachannel","width=500,height=800,top=0,left=800");
+        window.open(videourl,"spiderware","width=700,height=800,top=0,left=0");
+
+      }
+
+      function myopen1()
+      {
+      window.open("./data_video_taisei.html?roomId=hoshianaaa@test1-11","data+video1","width=450,height=200,top=0,left=0");
+      window.open("./video.html?roomId=hoshianaaa@test1-12","video2","width=450,height=200,top=300,left=0");
+      window.open("./video.html?roomId=hoshianaaa@test1-13","video3","width=450,height=200,top=0,left=500");
+      //window.open("./video.html?roomId=hoshianaaa@test1-14","video4","width=450,height=200,top=300,left=500");
+      window.open("./audio.html?roomId=hoshianaaa@test1-21","audio","width=900,height=200,top=600,left=0");
+      }
+    </script>
+  </body>
+</html>

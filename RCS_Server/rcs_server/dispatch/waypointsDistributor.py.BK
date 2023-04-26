@@ -1,0 +1,178 @@
+import random
+import threading
+import heapq
+import numpy as np
+import time
+from dataclasses import dataclass
+import json
+
+ORIGINAL_MAP_SIZE = [1660, 1660]
+NEW_MAP_SIZE = (100, 100)
+NUM_WAYPOINTS = 40
+
+
+
+
+
+@dataclass
+class Robot:
+    name: str
+    x: int
+    y: int
+    th: float
+
+@dataclass
+class Waypoint:
+    x: int
+    y: int
+    th: float
+
+
+class WAYPOINT_DISTRIBUTOR:
+    def __init__(self) -> None:
+        self.robots =[]
+        self.waypoints = []
+
+    def storeRobots(self,robots):
+        self.robots = [Robot(name=robot.robot_name, x=robot.current_x, y=robot.current_y, th=robot.current_th) for robot in robots]
+
+    def storeWaypoints(self,waypoints_list):
+        self.waypoints = [Waypoint(x=waypoint["x"], y=waypoint["y"], th=waypoint["th"]) for waypoint in waypoints_list]
+
+
+    def convert_coordinates(self, coord, old_size, new_size):
+        x_ratio = new_size[0] / old_size[0]
+        y_ratio = new_size[1] / old_size[1]
+        return int(coord[0] * x_ratio), int(coord[1] * y_ratio)
+
+    def heuristic(self, a, b):
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+    def a_star(self, start, goal, map_size):
+        def heuristic(a, b):
+            return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+        open_set = []
+        heapq.heappush(open_set, (0, start))
+
+        g_scores = {node: float('inf') for x in range(map_size[0]) for y in range(map_size[1]) for node in [(x, y)]}
+        g_scores[start] = 0
+
+        f_scores = {node: float('inf') for x in range(map_size[0]) for y in range(map_size[1]) for node in [(x, y)]}
+        f_scores[start] = self.heuristic(start, goal)
+
+        came_from = dict()
+
+        while open_set:
+            current = heapq.heappop(open_set)[1]
+
+            if current == goal:
+                path = [current]
+                while current in came_from:
+                    current = came_from[current]
+                    path.append(current)
+                return path[::-1]
+
+            for neighbor in [(current[0] + dx, current[1] + dy) for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]]:
+                if 0 <= neighbor[0] < map_size[0] and 0 <= neighbor[1] < map_size[1]:
+                    tentative_g_score = g_scores[current] + 1
+                    if tentative_g_score < g_scores[neighbor]:
+                        came_from[neighbor] = current
+                        g_scores[neighbor] = tentative_g_score
+                        f_scores[neighbor] = tentative_g_score + heuristic(neighbor, goal)
+                        if neighbor not in [item[1] for item in open_set]:
+                            heapq.heappush(open_set, (f_scores[neighbor], neighbor))
+
+        return None
+
+    def setConfig(self, height, width):
+        global ORIGINAL_MAP_SIZE
+        ORIGINAL_MAP_SIZE[0] = width
+        ORIGINAL_MAP_SIZE[1] = height
+
+    def create_robots(self, max_robots, map_size):
+        num_robots = max_robots
+        robot_positions = [tuple(np.random.randint(0, map_size[i], num_robots).tolist()) for i in range(2)]
+        robot_angles = [random.uniform(0, 2 * np.pi) for _ in range(num_robots)]
+        return [Robot(x=x, y=y, th=th) for x, y, th in zip(*robot_positions, robot_angles)]
+
+    def create_random_waypoints(self, number_of_waypoints, map_size):
+        return [Waypoint(x=random.randint(0, map_size[0] - 1), y=random.randint(0, map_size[1] - 1), th=random.uniform(0, 2 * np.pi)) for _ in range(number_of_waypoints)]
+
+    def convert_coordinates(self, coord, old_size, new_size):
+        x_ratio = new_size[0] / old_size[0]
+        y_ratio = new_size[1] / old_size[1]
+        return int(coord[0] * x_ratio), int(coord[1] * y_ratio)
+
+    def invert_coordinates(self, coord, old_size, new_size):
+        x_ratio = old_size[0] / new_size[0]
+        y_ratio = old_size[1] / new_size[1]
+        return int(coord[0] * x_ratio), int(coord[1] * y_ratio)
+
+    def startSimulation(self, original_robots, original_waypoints):
+        robots = []
+        waypoints = []
+        for robot in original_robots:
+            converted_x, converted_y = self.convert_coordinates((robot.x, robot.y), ORIGINAL_MAP_SIZE, NEW_MAP_SIZE)
+            robots.append(Robot(name=robot.name, x=converted_x, y=converted_y, th=robot.th))
+
+        for waypoint in original_waypoints:
+            converted_x, converted_y = self.convert_coordinates((waypoint.x, waypoint.y), ORIGINAL_MAP_SIZE, NEW_MAP_SIZE)
+            waypoints.append(Waypoint(x=converted_x, y=converted_y, th=waypoint.th))
+
+        print("robot", robots)
+        print("waypoints", waypoints)
+        print("ORIGINAL_MAP_SIZE", ORIGINAL_MAP_SIZE)
+
+        visited_waypoints = set()
+        robot_labels = [robot.name for robot in robots]
+        robot_paths = [None] * len(robots)
+        robot_waypoints = {robot.name: [] for robot in robots}
+        while waypoints:
+            for robot, label in zip(robots, robot_labels):
+                if not waypoints:
+                    break
+
+                closest_waypoint = None
+                min_distance = float('inf')
+                robot_path = None
+
+                for waypoint in waypoints:
+                    path = self.a_star((robot.x, robot.y), (waypoint.x, waypoint.y), NEW_MAP_SIZE)
+                    if path:
+                        distance = len(path)
+                        if distance < min_distance:
+                            min_distance = distance
+                            closest_waypoint = waypoint
+                            robot_path = path
+
+                if closest_waypoint:
+                    waypoints = [waypoint for waypoint in waypoints if (waypoint.x, waypoint.y, waypoint.th) != (closest_waypoint.x, closest_waypoint.y, closest_waypoint.th)]
+                    visited_waypoints.add((closest_waypoint.x, closest_waypoint.y, closest_waypoint.th))
+
+                    robot_index = robots.index(robot)
+                    robot_paths[robot_index] = robot_path
+                    robots[robot_index] = Robot(name=robot.name ,x=robot_path[-1][0], y=robot_path[-1][1], th=robot.th)
+                    x,y  = self.invert_coordinates((closest_waypoint.x, closest_waypoint.y), ORIGINAL_MAP_SIZE, NEW_MAP_SIZE)
+                    robot_waypoints[label].append(Waypoint(x=x, y=y, th=closest_waypoint.th))
+                    print(f"{label} at {self.invert_coordinates((robot.x, robot.y), ORIGINAL_MAP_SIZE, NEW_MAP_SIZE)} moves to waypoint {x,y, closest_waypoint.th}")
+
+        print("All waypoints visited.")
+
+        return robot_waypoints
+
+    def waypointsFormatConverter(self, waypoints):
+        waypoints_list = [{"x": waypoint.x, "y": waypoint.y, "th": waypoint.th} for waypoint in waypoints]
+        return json.dumps(waypoints_list)
+
+    def getPath(self):
+        return self.startSimulation(self.robots, self.waypoints)
+        
+
+if __name__ == "__main__":
+    wd = WAYPOINT_DISTRIBUTOR()
+    # wd.setConfig(500,500)
+    robots = wd.create_robots(3, ORIGINAL_MAP_SIZE)
+    
+    waypoints = wd.create_random_waypoints(NUM_WAYPOINTS, ORIGINAL_MAP_SIZE)
+    wd.startSimulation(robots, waypoints)

@@ -1,0 +1,33 @@
+---
+common:
+  default_window: rcs_client1_launch
+parameters:
+  hostname: localhost
+windows:
+  - name: rcs_server
+    commands:
+      - echo "Running local RCS server with docker"
+      - cd ../RCS_Server
+      - ./build_and_run.sh ${hostname}
+  - name: box_bot_gazebo
+    commands:
+      - echo "Running gazebo window"
+      - ros2 launch box_bot2_gazebo main_two_robots_sh.launch.xml
+  - name: box_bot_navigation
+    commands:
+      - echo "Running box_bot_navigation"
+      - ros2 launch box_bot2_navigation two_box_bots_navigation2.launch.xml
+  - name: box_bot_1_rcs_client
+    commands:
+      - echo "Running box_bot_1_rcs_client"
+      - export RCS_SERVER_ADDRESS=${hostname}
+      - export ROBOT_NAME=TB3_01
+      - export MAP_ID=sh
+      - ros2 launch rcs_client box_bot_1_rcs_client.launch.py
+  - name: box_bot_2_rcs_client
+    commands:
+      - echo "Running box_bot_2_rcs_client"
+      - export RCS_SERVER_ADDRESS=${hostname}
+      - export ROBOT_NAME=TB3_02
+      - export MAP_ID=sh
+      - ros2 launch rcs_client box_bot_2_rcs_client.launch.py

@@ -1,0 +1,155 @@
+<!-- dispatch/templates/dispatch/robot.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Robot</title> 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    {% include 'includes/scripts.html' %}
+</head>
+<body style="background-color: #121212;">
+    <div id="alert_holder" class="container-fluid position-fixed p-3"></div>
+    {% if single_bot %}
+    <h1 class="display-3 text-white" style="padding-left: 50px; text-transform: capitalize;">Robot: {{ robot_names|first }}</h1>
+    {% else %}
+    <h1 class="display-3 text-white" style="padding-left: 50px; text-transform: capitalize;">Locale: {{ locale_name }}</h1>
+    {% endif %}
+    <div class="container-fluid px-5" >
+        <div class="row gx-2">
+            <div class="col-sm-10" > <!-- Map Canvas -->
+                <div class="rounded p-3" style="background-color: rgba(113, 120, 141, 0.2);">
+                    <canvas id="myCanvas" height="800" width="1560" style="border: 3px solid black;"></canvas>
+                </div>
+                <!-- Camera Streams -->
+                <div class="accordion" id="accordionExample">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Camera Streams
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                            <div class="accordion-body">
+                                <canvas id="camera_canvas" width="640" height="480"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-2"> <!-- Command Palette-->
+                <div class="rounded p-3" style="background-color: rgba(113, 120, 141, 0.2);">
+                    <!-- Currently selected robot -->
+                    <div class="md-3">
+                        <h4 class="text-white">Mode:</h4>
+                        <p id="mode" style="font-size: 24px;color: pink;"></p>
+                        <hr style="border-color: azure;"/>
+                    </div>
+                    <div class="md-3">
+                        <label for="SelectedRobot" class="form-label text-white">Selected Robot</label>
+                        <select id="selectedRobot" onchange="onrobotselectionchange()">
+                        </select>
+                    </div>
+                    <h4 class="text-white" id="ConStat">Status: <span class="badge bg-secondary">Connecting...</span> </h3>
+                    <hr style="border-color: azure;"/>
+
+                    <div>
+                        <div class="md-3">
+                            <h4 class="text-white">KEY EXPLANATION</h4>
+                            <textarea id="Explanation" class="form-control" rows="10" readonly></textarea>
+                        </div>
+                        <hr style="border-color: azure;"/>
+
+                    </div>
+                    <div>
+                        <div class="md-3">
+                            <label for="customMessage" class="form-label text-white">Custom Message</label>
+                            <input class="form-control" id="customMessage">
+                        </div>
+                        <button class="btn btn-primary" id="customMessageSend" value="Send" style="margin-top: 10px;">Send</button>
+                        <hr style="border-color: azure;"/>
+                    </div>
+                    <div>
+                        <div class="md-3">
+                            <label for="templateMessage" class="form-label text-white">Template Message</label>
+                            <select id="templateCommand">
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="templateMessageSend" value="Send" style="margin-top: 10px;">Send</button>
+                        <hr style="border-color: azure;"/>
+                    </div>
+                    <div>
+                        <h4 class="text-white">Telemetry (raw):</h4>
+                        <textarea id="telemetryIn" class="form-control" rows="10" readonly></textarea>
+                    </div>
+                    <div>
+                        <h4 class="text-white">Debug window</h4>
+                        <textarea id="debugStatus" class="form-control" rows="10" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    {{ locale_name|json_script:"locale-name" }}
+    {{ robot_names|json_script:"robot-names" }}
+    {% load static %}
+    <script>
+        localeName = JSON.parse(document.getElementById('locale-name').textContent);
+    </script>
+    <script src="{% static 'js/keycodes.js' %}"></script>
+    <script src="{% static 'js/cviz.js' %}"></script>
+    <script src="{% static 'js/robot_connection.js' %}"></script>
+    <!-- load command  -->
+    <script>
+        document.querySelector('#templateMessageSend').onclick = function(e) {
+            
+            // `myDropdown`というIDを持つselect要素を取得
+            var dropdown = document.getElementById("templateCommand");
+
+            // // 選択されたoption要素のvalueを取得
+            var selectedValue = dropdown.value;
+            const message = selectedValue;
+            const dictionary = {
+                msgtype: 'COMMAND',
+                sender: 'RCS',
+                command: message,
+                duration: 10,
+                command_id: 0,
+                param: ""
+                };
+            if (selected_robot.socket.readyState !== WebSocket.CLOSED) {
+                selected_robot.socket.send(JSON.stringify({
+                    'message': dictionary
+                }));
+                bootstrap_alert("Sent custom message: " + message);
+            } else {
+                bootstrap_warn("Unable to send template message. Websocket connection not established.");
+            }
+        };
+
+        
+        var lines = [];
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            // 改行で区切って1行ずつに分割する
+            lines = xhr.responseText.split('\n');
+
+            // 各行ごとに配列に追加する
+            for (var i = 0; i < lines.length; i++) {
+            lines[i] = lines[i].trim();  // 余分な空白を取り除く
+            var dropdown = document.getElementById("templateCommand");
+
+            // 新しいoption要素を作成し、テキストを設定
+            var option1 = document.createElement("option");
+            option1.text = lines[i];
+            dropdown.add(option1);
+            }
+        }
+        };
+        xhr.open('GET', '/static/commands/go1.txt', true);
+        xhr.send();
+    </script>
+    <!-- {% include 'includes/scripts.html' %} -->
+</body>
+</html>

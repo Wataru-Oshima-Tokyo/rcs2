@@ -1,0 +1,29 @@
+<!-- dispatch/templates/dispatch/index.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>TechShare Dispatch</title>
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" >
+  </head>
+  <body style="background-color: #121212;">
+    <div class="container">
+      <div class="row pt-5">
+        <div class="col">
+          <a href="/dispatch/">
+            <h1 class="text-white" style="text-align: center;">RCS: DISPATCH</h1>
+          </a>
+        </div>
+        <div class="col">
+          <a href="/gui/">
+            <h1 class="text-white" style="text-align: center;">SLAMGUI</h1>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% include 'includes/scripts.html' %}
+    </body>
+</html>

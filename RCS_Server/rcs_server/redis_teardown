@@ -1,0 +1,2 @@
+docker stop rcs_redis
+docker rm rcs_redis

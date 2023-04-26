@@ -1,0 +1,41 @@
+---
+common:
+  default_window: rcs_client1_launch
+parameters:
+  hostname: localhost
+windows:
+  - name: rcs_server
+    commands:
+      - echo "Running local RCS server with docker"
+      - cd ../RCS_Server
+      - ./build_and_run.sh ${hostname}
+  - name: rcs_client1_launch
+    commands:
+      - echo "Running rcsclient TB3_1"
+      - cd ..
+      - humble_here
+      - export RCS_SERVER_ADDRESS=${hostname}
+      - export ROBOT_NAME=TB3_01
+      - export MAP_ID=sh
+      - source /global_ws/install/setup.bash
+      - ros2 launch rcs_client test.launch.py
+  - name: rcs_client2 launch
+    commands:
+      - echo "Running rcsclient TB3_2"
+      - cd ..
+      - humble_here
+      - export RCS_SERVER_ADDRESS=${hostname}
+      - export ROBOT_NAME=TB3_02
+      - export MAP_ID=sh
+      - source /global_ws/install/setup.bash
+      - ros2 launch rcs_client test.launch.py
+  - name: rcs_client3 launch
+    commands:
+      - echo "Running rcsclient TB3_3"
+      - cd ..
+      - humble_here
+      - export RCS_SERVER_ADDRESS=${hostname}
+      - export ROBOT_NAME=TB3_03
+      - export MAP_ID=sh
+      - source /global_ws/install/setup.bash
+      - ros2 launch rcs_client test.launch.py

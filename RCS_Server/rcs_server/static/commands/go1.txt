@@ -1,0 +1,17 @@
+start_nav
+stop_nav
+start_loop_nav
+reset_wp_pos
+add_wp
+delete_wp
+clear_wp
+wp_target_up
+wp_target_down
+target_wp
+target_robot
+save_wp
+read_wp
+init_pos_switch
+wp_type_change
+wp_switch
+cancel_actions

@@ -1,0 +1,14 @@
+#!/bin/bash
+HOSTNAME="$1"
+
+if [ -z "$1" ]
+  then
+    echo "No hostname specified. Please specify the hostname or IP for the server."
+    exit 1
+fi
+
+./redis_teardown
+./reset_dispatch_db
+./redis_bringup.sh
+./manage.py runserver "$1":5000
+
