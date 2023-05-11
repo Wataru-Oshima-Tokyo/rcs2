@@ -1,4 +1,16 @@
 #!/bin/bash
+architecture="$1"
+if [ -z "$1" ]
+    then
+        echo "No argument given, you want make a specific docker please put the architecture such as arm64 or amd64,,, , please provide it as an argument."
+        echo "in this case , since no argument is given, I will create a amd64 one"
+        distro="amd64"
+fi
+
+docker build -f rcs_server_${architecture} -t general_foxy .
+
+
+
 
 docker build  . -t rcs_server
 
