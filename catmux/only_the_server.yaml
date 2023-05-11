@@ -8,4 +8,4 @@ windows:
     commands:
       - echo "Running local RCS server with docker"
       - cd ../RCS_Server
-      - ./build_and_run.sh ${hostname}
+      - ./build_and_run.sh arm64 ${hostname}

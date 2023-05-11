@@ -7,15 +7,11 @@ if [ -z "$1" ]
         distro="amd64"
 fi
 
-docker build -f rcs_server_${architecture} -t general_foxy .
+docker build -f rcs_server_${architecture} -t rcs_server .
 
 
-
-
-docker build  . -t rcs_server
-
-IP="$1"
-if [ -z "$1" ]
+IP="$2"
+if [ -z "$2" ]
     then
         echo "No argument given, If an IP is required, please provide it as an argument. Using [localhost] for this run."
         IP="localhost"
