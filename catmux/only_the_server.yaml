@@ -1,0 +1,11 @@
+---
+common:
+  default_window: rcs_server
+parameters:
+  hostname: 100.118.239.107
+windows:
+  - name: rcs_server
+    commands:
+      - echo "Running local RCS server with docker"
+      - cd ../RCS_Server
+      - ./build_and_run.sh ${hostname}

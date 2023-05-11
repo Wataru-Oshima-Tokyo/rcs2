@@ -2,7 +2,7 @@
 common:
   default_window: rcs_client1_launch
 parameters:
-  hostname: localhost
+  hostname: 100.88.23.130 
 windows:
   - name: rcs_server
     commands:

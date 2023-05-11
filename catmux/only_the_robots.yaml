@@ -1,14 +1,10 @@
+
 ---
 common:
   default_window: rcs_client1_launch
 parameters:
-  hostname: 100.88.23.130 
+  hostname: 100.118.239.107
 windows:
-  - name: rcs_server
-    commands:
-      - echo "Running local RCS server with docker"
-      - cd ../RCS_Server
-      - ./build_and_run.sh ${hostname}
   - name: box_bot_gazebo
     commands:
       - echo "Running gazebo window"
